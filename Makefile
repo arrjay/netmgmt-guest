@@ -93,6 +93,9 @@ cdrom.iso: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT
 	mkdir -p isochr/isolinux
 	cp syslinux.cfg isochr/isolinux
 	cp /usr/share/syslinux/chain.c32 isochr/isolinux
+ifneq ("$(wildcard /usr/share/syslinux/ldlinux.c32)","")
+	cp /usr/share/syslinux/ldlinux.c32 isochr/isolinux
+endif
 	cp /usr/share/syslinux/isolinux.bin isochr/isolinux
 	cp discinfo isochr/.discinfo
 	cp ks.cfg isochr/
