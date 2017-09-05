@@ -26,6 +26,11 @@ Packages/.downloaded: repodata/.unwound-groups ks.cfg repodata/installed-package
 	$(MAKE) -B repodata/repomd.xml
 	touch Packages/.downloaded
 
+Packages/.ipxe-downloaded:
+	repotrack -c ./yum-ipxe.conf -a x86_64 -p ./Packages ipxe-bootimgs
+	$(MAKE) -B repodata/repomd.xml
+	touch Packages/.ipxe-downloaded
+
 LiveOS:
 	mkdir LiveOS
 
