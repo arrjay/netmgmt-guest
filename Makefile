@@ -9,6 +9,7 @@ repodata:
 
 # thie _guarantees_ we can resolve the base group data, even if not mirrored.
 repodata/repomd.xml: centos-comps/c7-x86_64-comps.xml
+	-rm -rf isochr
 	createrepo_c -g ./centos-comps/c7-x86_64-comps.xml .
 
 repodata/installed-groups.txt: ks.cfg ks-dumpgroups.py repodata
@@ -22,13 +23,15 @@ repodata/.unwound-groups: repodata/installed-groups.txt repodata/repomd.xml unwi
 	touch repodata/.unwound-groups
 
 Packages/.downloaded: repodata/.unwound-groups ks.cfg repodata/installed-packages.txt
-	repotrack -c ./yum.conf -a x86_64 -p ./Packages $$(cat ./repodata/group-*.txt) $$(cat ./repodata/installed-packages.txt)
+	repotrack -t -c ./yum.conf -a x86_64 -p ./Packages $$(cat ./repodata/group-*.txt) $$(cat ./repodata/installed-packages.txt)
 	$(MAKE) -B repodata/repomd.xml
+	-rm -rf /var/cache/yum-*
 	touch Packages/.downloaded
 
 Packages/.ipxe-downloaded:
-	repotrack -c ./yum-ipxe.conf -a x86_64 -p ./Packages ipxe-bootimgs
+	repotrack -t -c ./yum-ipxe.conf -a x86_64 -p ./Packages ipxe-bootimgs
 	$(MAKE) -B repodata/repomd.xml
+	-rm -rf /var/cache/yum-*
 	touch Packages/.ipxe-downloaded
 
 LiveOS:
@@ -78,7 +81,7 @@ images/initrd.img: images
 discinfo:
 	curl -L -o discinfo http://mirrors.kernel.org/centos/7/os/x86_64/.discinfo
 
-usb.img: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
+usb.img: Packages/.downloaded Packages/.ipxe-downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
 	mkdiskimage -FM4os usb.img 1024 256 63 > usb.offset
 	dd conv=notrunc bs=440 count=1 if=/usr/share/syslinux/mbr.bin of=usb.img
 	env MTOOLS_SKIP_CHECK=1 mlabel -i usb.img@@$$(cat usb.offset) ::HVINABOX
@@ -93,7 +96,7 @@ usb.img: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/f
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s LiveOS ::
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s images ::
 
-cdrom.iso: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
+cdrom.iso: Packages/.downloaded Packages/.ipxe-downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
 	-rm -rf isochr
 	mkdir -p isochr/isolinux
 	cp syslinux.cfg isochr/isolinux
