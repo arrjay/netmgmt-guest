@@ -25,13 +25,13 @@ repodata/.unwound-groups: repodata/installed-groups.txt repodata/repomd.xml unwi
 Packages/.downloaded: repodata/.unwound-groups ks.cfg repodata/installed-packages.txt
 	repotrack -t -c ./yum.conf -a x86_64 -p ./Packages $$(cat ./repodata/group-*.txt) $$(cat ./repodata/installed-packages.txt)
 	$(MAKE) -B repodata/repomd.xml
-	-rm -rf /var/cache/yum-*
+	-$(shell rm -rf /var/cache/yum-*)
 	touch Packages/.downloaded
 
 Packages/.ipxe-downloaded:
 	repotrack -t -c ./yum-ipxe.conf -a x86_64 -p ./Packages ipxe-bootimgs
 	$(MAKE) -B repodata/repomd.xml
-	-rm -rf /var/cache/yum-*
+	-$(shell rm -rf /var/cache/yum-*)
 	touch Packages/.ipxe-downloaded
 
 LiveOS:
