@@ -28,12 +28,6 @@ Packages/.downloaded: repodata/.unwound-groups ks.cfg repodata/installed-package
 	-$(shell rm -rf /var/cache/yum-*)
 	touch Packages/.downloaded
 
-Packages/.ipxe-downloaded:
-	repotrack -t -c ./yum-ipxe.conf -a x86_64 -p ./Packages ipxe-bootimgs
-	$(MAKE) -B repodata/repomd.xml
-	-$(shell rm -rf /var/cache/yum-*)
-	touch Packages/.ipxe-downloaded
-
 LiveOS:
 	mkdir LiveOS
 
@@ -81,7 +75,7 @@ images/initrd.img: images
 discinfo:
 	curl -L -o discinfo http://mirrors.kernel.org/centos/7/os/x86_64/.discinfo
 
-usb.img: Packages/.downloaded Packages/.ipxe-downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
+usb.img: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
 	mkdiskimage -FM4os usb.img 1024 256 63 > usb.offset
 	dd conv=notrunc bs=440 count=1 if=/usr/share/syslinux/mbr.bin of=usb.img
 	env MTOOLS_SKIP_CHECK=1 mlabel -i usb.img@@$$(cat usb.offset) ::HVINABOX
@@ -96,7 +90,7 @@ usb.img: Packages/.downloaded Packages/.ipxe-downloaded repodata/repomd.xml Live
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s LiveOS ::
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s images ::
 
-cdrom.iso: Packages/.downloaded Packages/.ipxe-downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
+cdrom.iso: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
 	-rm -rf isochr
 	mkdir -p isochr/isolinux
 	cp syslinux.cfg isochr/isolinux
@@ -112,6 +106,7 @@ endif
 	cp -r EFI isochr/
 	cp -r LiveOS isochr/
 	cp -r images isochr/isolinux/
+	cp ipxe-images.tgz isochr/
 	find isochr -type f -exec chmod a+r {} \;
 	find isochr -type d -exec chmod a+rx {} \;
 	mkisofs -o cdrom.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T -V HVINABOX isochr
