@@ -90,6 +90,30 @@ openbsd/6.1/amd64/pxeboot: openbsd/6.1/amd64
 openbsd/6.1/amd64/bsd.rd: openbsd/6.1/amd64
 	cd openbsd/6.1/amd64 && curl -LO http://wcs.bbxn.us/OpenBSD/6.1/amd64/bsd.rd
 
+openbsd-dist:
+	mkdir openbsd-dist
+
+openbsd-dist/6.1: openbsd-dist
+	mkdir openbsd-dist/6.1
+
+openbsd-dist/6.1/amd64: openbsd-dist/6.1
+	mkdir openbsd-dist/6.1/amd64
+
+openbsd-dist/6.1/amd64/SHA256.sig: openbsd-dist/6.1/amd64
+	cd openbsd-dist/6.1/amd64 && curl -LO http://wcs.bbxn.us/OpenBSD/6.1/amd64/SHA256.sig
+
+openbsd-dist/6.1/amd64/base61.tgz: openbsd-dist/6.1/amd64
+	cd openbsd-dist/6.1/amd64 && curl -LO http://wcs.bbxn.us/OpenBSD/6.1/amd64/base61.tgz
+
+openbsd-dist/6.1/amd64/bsd: openbsd-dist/6.1/amd64
+	cd openbsd-dist/6.1/amd64 && curl -LO http://wcs.bbxn.us/OpenBSD/6.1/amd64/bsd
+
+openbsd-dist/6.1/amd64/bsd.rd: openbsd-dist/6.1/amd64
+	cd openbsd-dist/6.1/amd64 && curl -LO http://wcs.bbxn.us/OpenBSD/6.1/amd64/bsd.rd
+
+openbsd-dist/6.1/amd64/index.txt: openbsd-dist/6.1/amd64/bsd.rd openbsd-dist/6.1/amd64/bsd openbsd-dist/6.1/amd64/base61.tgz openbsd-dist/6.1/amd64/SHA256.sig
+	cd openbsd-dist/6.1/amd64 && ls -ln > index.txt
+
 usb.img: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img
 	mkdiskimage -FM4os usb.img 1024 256 63 > usb.offset
 	dd conv=notrunc bs=440 count=1 if=/usr/share/syslinux/mbr.bin of=usb.img
@@ -105,7 +129,7 @@ usb.img: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/f
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s LiveOS ::
 	env MTOOLS_SKIP_CHECK=1 mcopy -i usb.img@@$$(cat usb.offset) -s images ::
 
-cdrom.iso: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img openbsd/6.1/amd64/pxeboot openbsd/6.1/amd64/bsd.rd
+cdrom.iso: Packages/.downloaded repodata/repomd.xml LiveOS/squashfs.img EFI/BOOT/fonts/unicode.pf2 EFI/BOOT/grubx64.efi EFI/BOOT/MokManager.efi EFI/BOOT/BOOTX64.EFI EFI/BOOT/grub.cfg syslinux.cfg discinfo images/pxeboot/vmlinuz images/pxeboot/initrd.img openbsd/6.1/amd64/pxeboot openbsd/6.1/amd64/bsd.rd openbsd-dist/6.1/amd64/index.txt
 	-rm -rf isochr
 	mkdir -p isochr/isolinux
 	cp syslinux.cfg isochr/isolinux
@@ -123,6 +147,7 @@ endif
 	cp -r images isochr/isolinux/
 	cp ipxe-images.tgz isochr/
 	cp -r openbsd isochr/
+	cp -r openbsd-dist isochr/
 	find isochr -type f -exec chmod a+r {} \;
 	find isochr -type d -exec chmod a+rx {} \;
 	mkisofs -o cdrom.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T -V HVINABOX isochr
