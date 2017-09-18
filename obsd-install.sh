@@ -1,1 +1,1 @@
-virt-install --name openbsd --memory 384,maxmemory=384 --vcpus 1 --pxe --os-variant openbsd4 --disk size=12,bus=virtio --network bridge=netmgmt,mac=52:54:00:44:C9:2E,model=virtio --network bridge=vmm,model=virtio --graphics none
+virt-install --name ifw --memory 384,maxmemory=384 --vcpus 1 --pxe --os-variant openbsd4 --disk size=12,bus=virtio --network bridge=netmgmt,mac=52:54:00:44:C9:2E,model=virtio --network bridge=vmm,model=virtio --network bridge=virthost,model=virtio --network bridge=transit,model=virtio --graphics none
